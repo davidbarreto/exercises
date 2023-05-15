@@ -5,6 +5,6 @@ CREATE TABLE workers(
     PRIMARY KEY (id)
 );
 
-INSERT INTO workers(id, name) VALUES(1, 'Kenai');
-INSERT INTO workers(id, name) VALUES(2, 'David');
-INSERT INTO workers(id, name) VALUES(3, 'Kesia');
+INSERT INTO workers(name) VALUES('Kenai');
+INSERT INTO workers(name) VALUES('David');
+INSERT INTO workers(name) VALUES('Kesia');
