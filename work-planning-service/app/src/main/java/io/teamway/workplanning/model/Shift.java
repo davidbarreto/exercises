@@ -1,30 +1,36 @@
 package io.teamway.workplanning.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "shifts")
 public class Shift {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Worker worker;
+    @Column(name = "shift_date")
+    private LocalDate shiftDate;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "shift_type_id")
     private ShiftType shiftType;
 
-    private LocalDate date;
+    @ManyToMany(mappedBy = "shifts")
+    private Set<Worker> workers = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -34,12 +40,12 @@ public class Shift {
         this.id = id;
     }
 
-    public Worker getWorker() {
-        return worker;
+    public LocalDate getShiftDate() {
+        return shiftDate;
     }
 
-    public void setWorker(Worker worker) {
-        this.worker = worker;
+    public void setShiftDate(LocalDate shiftDate) {
+        this.shiftDate = shiftDate;
     }
 
     public ShiftType getShiftType() {
@@ -50,11 +56,11 @@ public class Shift {
         this.shiftType = shiftType;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public Set<Worker> getWorkers() {
+        return workers;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setWorkers(Set<Worker> workers) {
+        this.workers = workers;
     }
 }

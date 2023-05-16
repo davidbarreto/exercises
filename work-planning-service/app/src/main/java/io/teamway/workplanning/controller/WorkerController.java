@@ -1,6 +1,6 @@
 package io.teamway.workplanning.controller;
 
-import io.teamway.workplanning.model.Worker;
+import io.teamway.workplanning.dto.WorkerDTO;
 import io.teamway.workplanning.service.WorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,23 +24,23 @@ public class WorkerController {
     private WorkerService workerService;
 
     @GetMapping
-    public List<Worker> getAllWorkers() {
+    public List<WorkerDTO> getAllWorkers() {
         return workerService.getAllWorkers();
     }
 
     @GetMapping("/{id}")
-    public Worker getWorker(@PathVariable Long id) {
+    public WorkerDTO getWorker(@PathVariable Long id) {
         return workerService.getWorker(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Worker createWorker(@RequestBody Worker worker) {
+    public WorkerDTO createWorker(@RequestBody WorkerDTO worker) {
         return workerService.createWorker(worker);
     }
 
     @PutMapping("/{id}")
-    public Worker updateWorker(@PathVariable Long id, @RequestBody Worker workerDetails) {
+    public WorkerDTO updateWorker(@PathVariable Long id, @RequestBody WorkerDTO workerDetails) {
         return workerService.updateWorker(id, workerDetails);
     }
 

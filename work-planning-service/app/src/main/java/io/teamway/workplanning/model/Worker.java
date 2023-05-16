@@ -1,14 +1,16 @@
 package io.teamway.workplanning.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "workers")
@@ -19,8 +21,11 @@ public class Worker {
     private Long id;
     private String name;
 
-    @OneToMany(mappedBy = "worker", cascade = CascadeType.ALL)
-    private List<Shift> shifts;
+    @ManyToMany
+    @JoinTable(name = "workers_shifts",
+            joinColumns = @JoinColumn(name = "worker_id"),
+            inverseJoinColumns = @JoinColumn(name = "shift_id"))
+    private Set<Shift> shifts = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -38,11 +43,11 @@ public class Worker {
         this.name = name;
     }
 
-    public List<Shift> getShifts() {
+    public Set<Shift> getShifts() {
         return shifts;
     }
 
-    public void setShifts(List<Shift> shifts) {
+    public void setShifts(Set<Shift> shifts) {
         this.shifts = shifts;
     }
 }

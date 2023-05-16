@@ -1,6 +1,8 @@
 package io.teamway.workplanning.service;
 
+import io.teamway.workplanning.dto.WorkerDTO;
 import io.teamway.workplanning.exception.ElementNotFoundException;
+import io.teamway.workplanning.mapper.WorkerMapper;
 import io.teamway.workplanning.model.Worker;
 import io.teamway.workplanning.repository.WorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,26 +18,38 @@ public class WorkerService {
     @Autowired
     private WorkerRepository workerRepository;
 
-    public List<Worker> getAllWorkers() {
-        return workerRepository.findAll();
+    @Autowired
+    private WorkerMapper workerMapper;
+
+    public List<WorkerDTO> getAllWorkers() {
+        return workerRepository.findAll().stream()
+                       .map(workerMapper::toDTO)
+                       .toList();
     }
 
-    public Worker getWorker(Long id) {
-        return workerRepository.findById(id).orElseThrow(() -> new ElementNotFoundException(RESOURCE_NAME, id));
+    public WorkerDTO getWorker(Long id) {
+        return workerRepository.findById(id)
+                       .map(workerMapper::toDTO)
+                       .orElseThrow(() -> new ElementNotFoundException(RESOURCE_NAME, id));
     }
 
-    public Worker createWorker(Worker worker) {
-        return workerRepository.save(worker);
+    public WorkerDTO createWorker(WorkerDTO worker) {
+        return workerMapper.toDTO(workerRepository.save(workerMapper.toEntity(worker)));
     }
 
-    public Worker updateWorker(Long id, Worker workerDetails) {
-        Worker worker = getWorker(id);
+    public WorkerDTO updateWorker(Long id, WorkerDTO workerDetails) {
+        Worker worker = findWorker(id);
         worker.setName(workerDetails.getName());
-        return workerRepository.save(worker);
+        return workerMapper.toDTO(workerRepository.save(worker));
     }
 
     public void deleteWorker(Long id) {
         getWorker(id);
         workerRepository.deleteById(id);
+    }
+
+    private Worker findWorker(Long id) {
+        return workerRepository.findById(id)
+                       .orElseThrow(() -> new ElementNotFoundException(RESOURCE_NAME, id));
     }
 }
