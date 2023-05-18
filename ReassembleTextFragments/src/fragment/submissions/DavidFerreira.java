@@ -21,106 +21,78 @@ public class DavidFerreira {
     }
 
     private static String reassemble(String fragmentedText) {
-        return reassemble(splitAtSemicolon.splitAsStream(fragmentedText).collect(Collectors.toSet()));
+        return new FragmentReassembler().reassemble(splitAtSemicolon.splitAsStream(fragmentedText).collect(Collectors.toSet()));
     }
 
-    private static String reassemble(Set<String> fragments) {
+    static class FragmentReassembler {
+        public String reassemble(Set<String> fragments) {
 
-        while (fragments.size() > 1) {
-            String fragment = fragments.iterator().next();
-            fragments.remove(fragment);
+            while (fragments.size() > 1) {
+                String fragment = fragments.iterator().next();
+                fragments.remove(fragment);
 
-            FragmentComparisonResult result = longestSuffix(fragment, fragments);
-            String combinedChunks = combine(result);
+                FragmentComparisonResult result = longestSuffix(fragment, fragments);
 
-            String toRemove = result.chunkWithLongestCommonSuffix.equals(fragment) ?
-                                      result.chunk : result.chunkWithLongestCommonSuffix;
-            fragments.remove(toRemove);
-            fragments.add(combinedChunks);
-        }
+                fragments.remove(result.baseFragment);
+                fragments.remove(result.pairFragment);
 
-        // At the end, the set will contain just one element: the reassempled text
-        return fragments.iterator().next();
-    }
-
-    private static FragmentComparisonResult longestSuffix(String chunk, Set<String> chunks) {
-
-        FragmentComparisonResult ans = new FragmentComparisonResult(chunk, null, false, 0);
-        for (String searchedChunk : chunks) {
-            ans = longestSuffixLength(ans, chunk, searchedChunk);
-        }
-        return ans;
-    }
-
-    private static FragmentComparisonResult longestSuffixLength(FragmentComparisonResult currentMax, String chunk1, String chunk2) {
-
-        FragmentComparisonResult data1 = longestSuffix(chunk1, chunk2);
-        FragmentComparisonResult data2 = longestSuffix(chunk2, chunk1);
-        FragmentComparisonResult data = data1.commonSuffixSize > data2.commonSuffixSize ? data1 : data2;
-
-        if (data.commonSuffixSize >= currentMax.commonSuffixSize) {
-            return data;
-        }
-        return currentMax;
-    }
-
-    private static FragmentComparisonResult longestSuffix(String chunk1, String chunk2) {
-
-        if (chunk1.contains(chunk2)) {
-            return new FragmentComparisonResult(chunk1, chunk2, true, chunk2.length());
-        }
-
-        for (int i = 0; i < chunk1.length(); i++) {
-            String substring = chunk1.substring(i);
-            if (chunk2.startsWith(substring)) {
-                return new FragmentComparisonResult(chunk1, chunk2, false, substring.length());
+                fragments.add(merge(result));
             }
+            // At the end, the set will contain just one element: the reassembled text
+            return fragments.iterator().next();
         }
 
-        return new FragmentComparisonResult(chunk1, chunk2, false, 0);
-    }
+        public FragmentComparisonResult longestSuffix(String fragment, Set<String> fragments) {
 
-    private static String combine(FragmentComparisonResult data) {
+            FragmentComparisonResult ans = new FragmentComparisonResult(fragment, null, false, 0);
+            for (String searchingFragment : fragments) {
+                FragmentComparisonResult result1 = longestSuffix(fragment, searchingFragment);
+                FragmentComparisonResult result2 = longestSuffix(searchingFragment, fragment);
+                FragmentComparisonResult result = result1.overlappingSize > result2.overlappingSize ? result1 : result2;
 
-        if (data.contained) {
-            return data.chunk;
+                if (result.overlappingSize >= ans.overlappingSize) {
+                    ans = result;
+                }
+            }
+            return ans;
         }
 
-        if (data.commonSuffixSize == 0) {
-            return data.chunk + data.chunkWithLongestCommonSuffix;
-        }
-        return data.chunk + data.chunkWithLongestCommonSuffix.substring(data.commonSuffixSize);
-    }
+        public FragmentComparisonResult longestSuffix(String fragment1, String fragment2) {
 
-    static class FragmentComparisonResult {
-        private final String chunk;
-        private final String chunkWithLongestCommonSuffix;
+            if (fragment1.contains(fragment2)) {
+                return new FragmentComparisonResult(fragment1, fragment2, true, fragment2.length());
+            }
 
-        private final boolean contained;
-
-        private final int commonSuffixSize;
-
-        public FragmentComparisonResult(String chunk, String chunkWithLongestCommonSuffix, boolean contained, int commonSuffixSize) {
-            this.chunk = chunk;
-            this.chunkWithLongestCommonSuffix = chunkWithLongestCommonSuffix;
-            this.contained = contained;
-            this.commonSuffixSize = commonSuffixSize;
+            for (int i = 0; i < fragment1.length(); i++) {
+                String substring = fragment1.substring(i);
+                if (fragment2.startsWith(substring)) {
+                    return new FragmentComparisonResult(fragment1, fragment2, false, substring.length());
+                }
+            }
+            return new FragmentComparisonResult(fragment1, fragment2, false, 0);
         }
 
-        public String getChunk() {
-            return chunk;
+        public String merge(FragmentComparisonResult fragmentComparisonResult) {
+
+            if (fragmentComparisonResult.fragmentBaseContainsPairFragment) {
+                return fragmentComparisonResult.baseFragment;
+            }
+            return fragmentComparisonResult.baseFragment
+                           + fragmentComparisonResult.pairFragment.substring(fragmentComparisonResult.overlappingSize);
         }
 
-        public String getChunkWithLongestCommonSuffix() {
-            return chunkWithLongestCommonSuffix;
-        }
+        public static class FragmentComparisonResult {
+            private final String baseFragment;
+            private final String pairFragment;
+            private final boolean fragmentBaseContainsPairFragment;
+            private final int overlappingSize;
 
-        public boolean isContained() {
-            return contained;
-        }
-
-        public int getCommonSuffixSize() {
-            return commonSuffixSize;
+            public FragmentComparisonResult(String baseFragment, String pairFragment, boolean fragmentBaseContainsPairFragment, int overlappingSize) {
+                this.baseFragment = baseFragment;
+                this.pairFragment = pairFragment;
+                this.fragmentBaseContainsPairFragment = fragmentBaseContainsPairFragment;
+                this.overlappingSize = overlappingSize;
+            }
         }
     }
 }
