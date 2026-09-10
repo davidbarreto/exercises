@@ -15,7 +15,7 @@ public class ExpiringCacheImpl<K, V> implements ExpiringCache<K, V>, AutoCloseab
 
     private final ScheduledExecutorService cleaner;
     private final Map<K, CacheEntry<V>> entries;
-    private Clock clock;
+    private final Clock clock;
 
     public ExpiringCacheImpl() {
         this(Clock.systemDefaultZone(), Executors.newSingleThreadScheduledExecutor());
